@@ -1,5 +1,6 @@
 class User {
     constructor(name, gender, birth, country, email, password, photo, admin) {
+        this._id;
         this._name = name;
         this._gender = gender;
         this._birth = birth;
@@ -9,6 +10,10 @@ class User {
         this._photo = photo;
         this._admin = admin;
         this._register = new Date();
+    }
+
+    get id(){
+        return this._id;
     }
 
     get register(){
@@ -54,5 +59,49 @@ class User {
                 this[name] = json[name];
             }
         }
+    }
+
+    static getUsersStorage(){
+        let users = [];
+        if(localStorage.getItem("users")){//Verifica se já existe alguma sessão criada
+            users = JSON.parse(localStorage.getItem("users"));
+        }
+        return users;
+    }
+
+    getNewID(){//Cria um ID
+        let usersID = parseInt(localStorage.getItem("usersID"));//guarda o ultimo ID que gerei
+        if(!usersID > 0) usersID = 0;
+        usersID++;
+        localStorage.setItem("usersID", usersID);//gravando no localStorage
+        return usersID;
+    }
+
+    save(){
+        let users = User.getUsersStorage();//Retorna todos os usuarios que estão no localStorage e criara um array
+        
+        if(this.id > 0){//verifica se ja tem o id
+            users.map(u=>{
+                if(u._id == this.id){//this é o users que está sendo manipulado
+                    Object.assign(u, this);
+                }
+
+                return u;
+            });
+        }else{
+            this._id = this.getNewID();
+            users.push(this);//this é o users que está sendo manipulado
+        }
+        localStorage.setItem("users", JSON.stringify(users));
+    }
+
+    remove(){
+        let users = User.getUsersStorage();
+        users.forEach((userData, index) => {
+            if(this._id == userData._id){
+                users.splice(index,1);//remove um elemento. Primeiro é o elemento e o segundo é a quantidade
+            }
+        });
+        localStorage.setItem("users", JSON.stringify(users));//guarda novamente a informação do localStorage
     }
 }

@@ -36,6 +36,7 @@ class UserController {
                     
                     let user = new User();
                     user.loadFromJSON(result);
+                    user.save();
 
                     this.getTr(user, tr);
 
@@ -69,7 +70,8 @@ class UserController {
 
             this.getPhoto(this.formEl).then((content) => {//se a leitura funcionar então execute o que esta aqui dentro. content é o caminho da img
                 values.photo = content;
-                this.insert(values);
+                //this.insert(values);
+                values.save();
                 this.addLine(values);
                 this.formEl.reset();
                 btn.disabled = false;
@@ -149,29 +151,14 @@ class UserController {
         return new User(user.name, user.gender, user.birth, user.country, user.email, user.password, user.photo, user.admin);
     }
 
-    getUsersStorage(){
-        let users = [];
-        if(localStorage.getItem("users")){//Verifica se já existe alguma sessão criada
-            users = JSON.parse(localStorage.getItem("users"));
-        }
-        return users;
-    }
-
     selectAll(){
-        let users = this.getUsersStorage();
+        let users = User.getUsersStorage();//carrega a lista de usuários
         users.forEach(dataUser=>{
             let user = new User();
             user.loadFromJSON(dataUser);
             this.addLine(user);
         });
 
-    }
-
-    insert(data){//Cria uma sessão
-        let users = this.getUsersStorage();
-        users.push(data);
-        //sessionStorage.setItem("users", JSON.stringify(users));
-        localStorage.setItem("users", JSON.stringify(users));
     }
 
     addLine(dataUser) {
@@ -209,6 +196,9 @@ class UserController {
     addEventsTR(tr){//evento click, quando clicar montará novamente o tr
         tr.querySelector(".btn-delete").addEventListener("click", e => {
             if(confirm("Deseja realmente excluir")){//retorna um booleano
+                let user = new User();
+                user.loadFromJSON(JSON.parse(tr.dataset.user));
+                user.remove();
                 tr.remove();
                 this.updateCount();
             }
